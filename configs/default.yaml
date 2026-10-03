@@ -1,0 +1,65 @@
+env:
+  episode_length: 30
+  purchase_value: 100.0
+  churn_penalty: 300.0
+  discount_rate: 0.20
+  noise_std: 0.01
+
+  uplift:
+    none: 0.00
+    email: 0.03
+    reco: 0.02
+    discount: 0.12
+
+  churn:
+    tau: 0.75
+    k: 12.0
+
+  dynamics:
+    E:
+      email_boost: 0.10
+      reco_boost: 0.07
+      fatigue_drag: 0.12
+    F:
+      decay: 0.92
+      contact_add: 0.02
+      discount_add: 0.06
+    P:
+      decay: 0.85
+      engagement_gain: 0.18
+      fatigue_drag: 0.22
+      purchase_bump: 0.05
+    purchase_fatigue_suppress: 0.20
+
+data:
+  n_episodes: 20000
+  seed: 42
+
+logging_policies:
+  randomized:
+    action_probs: {none: 0.25, email: 0.25, reco: 0.25, discount: 0.25}
+  confounded:
+    discount_when_low_P: 0.60
+    email_when_high_E: 0.60
+    none_when_high_F: 0.70
+
+model:
+  hidden_sizes: [64, 64]
+  lr: 0.001
+  batch_size: 4096
+  epochs: 20
+  weight_decay: 0.0001
+  grad_clip: 1.0
+  device: "auto"
+
+planner:
+  gamma_default: 0.95
+  K: 512
+  particles: 5
+
+sweeps:
+  seeds: [0,1,2,3,4]
+  horizons: [1,2,3,5,8,13]
+  gammas: [0.90, 0.95, 0.99]
+  betas: [0.0]  # can add later (bias in imagination)
+  eval_episodes: 2000

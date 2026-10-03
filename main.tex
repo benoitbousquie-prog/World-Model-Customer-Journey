@@ -1,0 +1,138 @@
+cd ~/Documents/wm_journeys_work/world-model-journeys
+
+cat > main.tex << 'EOF'
+\documentclass[11pt]{article}
+
+% ---- arXiv-friendly packages ----
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{xcolor}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  urlcolor=blue,
+  citecolor=blue,
+  pdftitle={Can World Models Optimize Customer Journeys and Lifetime Value?},
+  pdfauthor={Benoit Bousqui\'e}
+}
+
+% ---- macros ----
+\newcommand{\E}_{\mathbb{E}}
+\newcommand{\R}_{\mathbb{R}}
+\newcommand{\st}_{s_t}
+\newcommand{\at}_{a_t}
+\newcommand{\wm}_{\hat{P}} % learned world model dynamics
+\newcommand{\gt}_{P}       % ground-truth dynamics
+
+\title{Can World Models Optimize Customer Journeys and lifetime value?}
+\author{Benoit Bousqui\'e}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Customer-journey optimization and customer lifetime value (CLV) management are fundamentally sequential decision problems: actions taken today (emails, recommendations, discounts) change future engagement, fatigue, and churn risk. World models---learned simulators of environment dynamics---offer an appealing route to multi-step planning under these delayed effects. However, in marketing operations, logged data are often confounded: action assignment depends on customer state, which can bias learned dynamics and cause planning to exploit model error.
+We propose a diagnostic simulation framework to study when world-model-based planning improves long-horizon value and when it becomes unreliable. We construct a controlled environment with delayed costs, train world models under randomized and confounded logging regimes, and evaluate receding-horizon planning policies in a separate ground-truth simulator. We report a regime-dependent ``reality gap'': simulated policy value can diverge materially from true value, especially under confounding and longer horizons.
+\end{abstract}
+
+\section{Introduction}
+Practitioners routinely face a tension between short-term campaign success and long-term customer value. For example, discounts can increase immediate conversions but also increase fatigue and future churn risk. Standard one-step response models (uplift, immediate conversion probability) are poorly aligned with CLV objectives because they ignore delayed effects. Multi-step planning requires a model of how the customer state evolves over time.
+
+World models aim to learn such dynamics from data and enable planning by ``imagining'' futures under candidate action sequences. This raises two critical questions for marketing journeys: (i) when does planning with a learned world model improve long-horizon outcomes, and (ii) when does it fail due to model error or confounding in the data used to learn the model?
+
+\paragraph{Contributions.}
+This paper contributes:
+\begin{itemize}
+  \item A diagnostic simulation pipeline that separates \emph{training} (learning a world model from logs) from \emph{grading} (evaluating policies in a ground-truth simulator), avoiding circular evaluation.
+  \item A Level-0 environment with explicit delayed effects (fatigue and churn), enabling controlled study of horizon length $H$, injected bias $\beta$, discount factor $\gamma$, and logging regime.
+  \item Empirical evidence of a regime-dependent reality gap: under confounded logs, simulated value can become over-optimistic at long horizons, whereas under randomized logs the learned model remains conservative in the subset analyzed.
+\end{itemize}
+
+\section{Background: sequential decision framing}
+We model a customer journey as an episodic Markov decision process (MDP) with state $\st \in \mathcal{S}$, action $\at \in \mathcal{A}$, transition dynamics $\gt(\st,\at)$, and reward $r_t$. A \emph{world model} learns an approximation $\wm$ of $\gt$ from logged data. A planner then selects actions by rolling out candidate action sequences in $\wm$ and choosing the first action of the best sequence (receding horizon / MPC).
+
+\section{Why training and grading are not circular}
+A common concern is circularity if the same simulator is used to both train and evaluate. The pipeline here explicitly separates roles:
+\begin{enumerate}
+  \item \textbf{Ground-truth environment} (authoritative reality): generates trajectories and provides the grading environment.
+  \item \textbf{Learned world model}: trained from logged trajectories and used only for planning/imagination.
+  \item \textbf{Evaluation harness}: executes the resulting policy in the ground-truth environment and reports \emph{true} return.
+\end{enumerate}
+The policy may be optimized in the learned model, but performance is judged in the ground-truth simulator.
+
+\section{Level-0 diagnostic environment (customer journey)}
+We define a fully observable state $\st = (E_t, F_t, P_t) \in [0,1]^3$ capturing engagement $E$, fatigue $F$, and purchase propensity $P$. Actions are discrete: $\mathcal{A} = \{\texttt{none}, \texttt{email}, \texttt{reco}, \texttt{discount}\}$.
+At each step, a purchase event and a churn event may occur stochastically. Rewards are revenue-focused:
+\begin{equation}
+r_t = 100\cdot \mathbb{1}[\text{purchase}] - c(\at) - 300\cdot \mathbb{1}[\text{churn}],
+\end{equation}
+where $c(\at)$ is a proportional discount cost when \texttt{discount} is chosen.
+
+The environment is designed so that some actions produce immediate gains but impose delayed costs (e.g., discount $\rightarrow$ fatigue $\rightarrow$ churn).
+
+\section{Data regimes: randomized vs confounded logs}
+We generate two logging datasets from the same ground-truth environment:
+\begin{itemize}
+  \item \textbf{Randomized logging}: actions are sampled independently of state (uniform or near-uniform), producing broad state-action coverage.
+  \item \textbf{Confounded logging}: ``business-as-usual'' heuristics assign actions based on state (e.g., discounts to low-propensity customers, fewer contacts when fatigue is high), inducing selection bias and reduced coverage for counterfactual actions.
+\end{itemize}
+
+\section{World model learning and planning}
+We train a predictive model of $(\stnext, p_{\text{buy}}, p_{\text{churn}})$ from $(\st,\at)$ using supervised learning. Planning uses model predictive control (MPC): sample candidate action sequences of length $H$, roll out in the world model, pick the first action of the best sequence, execute in the ground-truth environment, and repeat.
+
+We vary:
+\begin{itemize}
+  \item Planning horizon $H$,
+  \item Discount factor $\gamma$,
+  \item Injected bias $\beta$ in imagination (a controlled mis-specification applied during model rollouts),
+  \item Logging regime (randomized vs confounded training data).
+\end{itemize}
+
+\section{Diagnostics: the reality gap}
+We define the \emph{reality gap} as the difference between simulated and true policy value:
+\begin{equation}
+\Delta(\pi) = J(\pi \mid \wm) - J(\pi \mid \gt),
+\end{equation}
+where $J(\pi \mid \wm)$ is the return when rolling out policy $\pi$ inside the learned model and $J(\pi \mid \gt)$ is the return when rolling out $\pi$ in the ground-truth environment. A positive gap indicates optimism (simulation overestimates real performance); negative indicates pessimism.
+
+\section{Results (Level-0)}
+This section reports the key diagnostic result: regime-dependent reality gap under matched sweeps of $(H,\gamma,\beta)$.
+
+\subsection{Reality gap comparison: randomized vs confounded}
+Table~\ref{tab:gap} reports the mean reality gap $\Delta$ (simulated minus true return) on a matched subset of settings: $H \in \{1,3,8,13\}$ and $\gamma \in \{0.95,0.99\}$. For randomized logs, the measured gaps are negative and shrink toward zero as $H$ increases in the subset shown. For confounded logs, gaps transition from negative at short horizons to strongly positive at longer horizons, indicating horizon-dependent over-optimism under confounding.
+
+\begin{table}[t]
+\centering
+\caption{Mean reality gap $\Delta = J(\pi\mid\wm) - J(\pi\mid\gt)$ for MPC policies on a matched subset. Positive values indicate optimistic simulation (overestimation).}
+\label{tab:gap}
+\begin{tabular}_{@{}llllr@{}}
+\toprule
+Regime & $\gamma$ & $\beta$ & $H$ & Mean reality gap \\ \midrule
+\multicolumn{5}_{l}_{\textbf{Randomized (subset shown, $\beta=0.0$)}}\\
+Randomized & 0.95 & 0.00 & 1  & -250.00\\
+Randomized & 0.95 & 0.00 & 3  & -134.49\\
+Randomized & 0.95 & 0.00 & 8  &  -93.63\\
+Randomized & 0.95 & 0.00 & 13 &  -39.70\\
+Randomized & 0.99 & 0.00 & 1  & -250.00\\
+Randomized & 0.99 & 0.00 & 3  & -148.95\\
+Randomized & 0.99 & 0.00 & 8  & -104.57\\
+Randomized & 0.99 & 0.00 & 13 &   10.78\\ \midrule
+\multicolumn{5}_{l}_{\textbf{Confounded}}\\
+Confounded & 0.95 & 0.00 & 1  & -108.60\\
+Confounded & 0.95 & 0.00 & 3  &  -13.98\\
+Confounded & 0.95 & 0.00 & 8  &   72.46\\
+Confounded & 0.95 & 0.00 & 13 &  110.12\\
+Confounded & 0.95 & 0.05 & 1  & -167.42\\
+Conf% (Paste the main.tex content I provided earlier here)

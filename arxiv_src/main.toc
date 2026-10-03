@@ -1,0 +1,37 @@
+\contentsline {section}{\numberline {1}Introduction}{2}{section.1}%
+\contentsline {paragraph}{Contributions.}{2}{section*.2}%
+\contentsline {section}{\numberline {2}From Response Prediction to Causal Decision Making}{3}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Uplift modeling}{3}{subsection.2.1}%
+\contentsline {section}{\numberline {3}From Individual Interventions to Customer Journeys}{3}{section.3}%
+\contentsline {section}{\numberline {4}Customer Journeys as Dynamic Systems}{3}{section.4}%
+\contentsline {section}{\numberline {5}A Reinforcement Learning Perspective}{3}{section.5}%
+\contentsline {section}{\numberline {6}Model-Free versus Model-Based Decision-Making}{3}{section.6}%
+\contentsline {section}{\numberline {7}World Models: Concept, Adaptation, and Latent State}{4}{section.7}%
+\contentsline {section}{\numberline {8}Stochasticity}{4}{section.8}%
+\contentsline {section}{\numberline {9}Planning with the World Model}{4}{section.9}%
+\contentsline {section}{\numberline {10}Why Long-Term Value Matters}{4}{section.10}%
+\contentsline {section}{\numberline {11}Relationship with Uplift Modeling}{4}{section.11}%
+\contentsline {section}{\numberline {12}The Counterfactual Problem}{4}{section.12}%
+\contentsline {section}{\numberline {13}The Problem of Model Error}{5}{section.13}%
+\contentsline {section}{\numberline {14}The Marketing World Model as a Decision Simulator}{5}{section.14}%
+\contentsline {section}{\numberline {15}Related Work and Positioning}{5}{section.15}%
+\contentsline {section}{\numberline {16}Research Questions}{5}{section.16}%
+\contentsline {section}{\numberline {17}Conceptual Propositions}{5}{section.17}%
+\contentsline {section}{\numberline {18}Proposed Research Framework}{6}{section.18}%
+\contentsline {section}{\numberline {19}Proposed Experimental Program}{6}{section.19}%
+\contentsline {subsection}{\numberline {19.1}Environment: two levels of difficulty}{6}{subsection.19.1}%
+\contentsline {paragraph}{Level 0 (primary).}{6}{section*.3}%
+\contentsline {paragraph}{Level 1 (robustness).}{6}{section*.4}%
+\contentsline {subsection}{\numberline {19.2}Data generation}{6}{subsection.19.2}%
+\contentsline {subsection}{\numberline {19.3}World model and planning}{6}{subsection.19.3}%
+\contentsline {subsection}{\numberline {19.4}Baselines}{6}{subsection.19.4}%
+\contentsline {subsection}{\numberline {19.5}Metrics and proposition mapping}{7}{subsection.19.5}%
+\contentsline {subsection}{\numberline {19.6}Observed Level-0 results (this work)}{7}{subsection.19.6}%
+\contentsline {paragraph}{Key finding.}{7}{section*.6}%
+\contentsline {section}{\numberline {20}Expected Contributions}{7}{section.20}%
+\contentsline {paragraph}{Conceptual.}{7}{section*.9}%
+\contentsline {paragraph}{Methodological.}{7}{section*.10}%
+\contentsline {paragraph}{Practical.}{7}{section*.11}%
+\contentsline {section}{\numberline {21}Limitations and Scope}{7}{section.21}%
+\contentsline {section}{\numberline {22}Discussion}{8}{section.22}%
+\contentsline {section}{\numberline {23}Conclusion}{8}{section.23}%
